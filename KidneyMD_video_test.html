@@ -1,9 +1,0 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Video test</title>
-<style>html,body{margin:0;background:#000;color:#fff;font:28px sans-serif}video{width:100%;height:80vh;background:#222}#s{padding:12px}</style></head>
-<body><video id="v" src="GFR.mp4" muted playsinline autoplay loop></video><div id="s">starting…</div>
-<script>
-var v=document.getElementById('v'),s=document.getElementById('s');
-function u(m){s.textContent=m+' | t='+v.currentTime.toFixed(1)+' | ready='+v.readyState+' | '+v.videoWidth+'x'+v.videoHeight+(v.error?' | ERROR code '+v.error.code:'')+' | '+navigator.userAgent.match(/Chrome\/[\d.]+/);}
-setInterval(function(){u('status')},1000);
-v.addEventListener('error',function(){u('error')});v.play&&v.play().catch(function(e){u('play blocked: '+e)});
-</script></body></html>
