@@ -1,0 +1,54 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Stop-video test v2</title>
+<style>
+  html,body{margin:0;background:#0b1220;color:#fff;font:26px/1.45 sans-serif}
+  #log{padding:20px;white-space:pre-wrap}
+  .ok{color:#7CFC9A}.bad{color:#ff8a8a}.dim{color:#9fb0cc}.ev{color:#ffd37a}
+</style></head>
+<body><div id="log"></div>
+<script>
+// DIAGNOSTIC v2 — records a timeline instead of guessing a verdict.
+//   2 s   starts GFR.mp4 in Fully's native player
+//   every 3 s  writes "alive" (if the page keeps running while the video plays, many
+//              of these lines appear in the log; if the page is frozen, they stop)
+//   15 s  calls fully.stopVideo()
+//   30 s  calls fully.bringToForeground()
+// Every focus / blur / visibility change is logged with its time.
+// Afterwards: if the screen shows the log, take a photo of ALL of it (scroll if needed).
+var VIDEO = 'GFR.mp4';
+var logEl = document.getElementById('log');
+var t0 = Date.now();
+function sec(){ return ((Date.now()-t0)/1000).toFixed(1); }
+function say(m,c){ logEl.insertAdjacentHTML('beforeend','<div class="'+(c||'')+'">['+sec()+'s] '+m+'</div>'); }
+
+if (typeof fully === 'undefined' || typeof fully.playVideo !== 'function') {
+  say('Fully JavaScript interface NOT available. Turn on "Enable JavaScript Interface (PLUS)".', 'bad');
+} else {
+  say('Page loaded. stopVideo=' + typeof fully.stopVideo + ', bringToForeground=' + typeof fully.bringToForeground);
+
+  ['visibilitychange','focus','blur','pageshow','pagehide'].forEach(function(n){
+    (n==='visibilitychange'?document:window).addEventListener(n,function(){
+      say('EVENT ' + n + (n==='visibilitychange' ? ' → ' + document.visibilityState : ''), 'ev');
+    });
+  });
+
+  var alive = 0;
+  setInterval(function(){ alive++; say('alive #' + alive + ' (' + document.visibilityState + ')', 'dim'); }, 3000);
+
+  setTimeout(function(){
+    say('Calling playVideo…');
+    try { fully.playVideo(new URL(VIDEO, location.href).href, false, false, false, true); say('playVideo returned'); }
+    catch(e){ say('playVideo threw: ' + e, 'bad'); }
+  }, 2000);
+
+  setTimeout(function(){
+    say('Calling stopVideo() now', 'ok');
+    try { fully.stopVideo(); say('stopVideo returned'); } catch(e){ say('stopVideo threw: ' + e, 'bad'); }
+  }, 17000);
+
+  setTimeout(function(){
+    say('Calling bringToForeground() now', 'ok');
+    try { fully.bringToForeground(); say('bringToForeground returned'); } catch(e){ say('bringToForeground threw: ' + e, 'bad'); }
+  }, 32000);
+}
+</script></body></html>
